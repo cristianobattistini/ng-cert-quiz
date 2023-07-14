@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {Category, Difficulty, Question} from '../data.models';
+import {Category, CategoryDetails, Difficulty, Optional, Question} from '../data.models';
 import {Observable} from 'rxjs';
 import {QuizService} from '../quiz.service';
 
@@ -10,7 +10,26 @@ import {QuizService} from '../quiz.service';
 })
 export class QuizMakerComponent {
 
-  categories$: Observable<Category[]>;
+  categories$: Observable<CategoryDetails[]>;
+  questions$!: Observable<Question[]>;
+  selectedCategory : Optional<CategoryDetails>;
+
+  constructor(protected quizService: QuizService) {
+    this.categories$ = quizService.getAllCategories();
+  }
+
+  createQuiz(cat: string, difficulty: string): void {
+    this.questions$ = this.quizService.createQuiz(cat, difficulty as Difficulty);
+  }
+
+  //switch che controlla il nome
+
+  onCategoryChange(category: CategoryDetails): void {
+    console.log(category)
+    console.log(this.selectedCategory)
+  }
+  
+  /*categories$: Observable<Category[]>;
   questions$!: Observable<Question[]>;
 
   constructor(protected quizService: QuizService) {
@@ -18,6 +37,8 @@ export class QuizMakerComponent {
   }
 
   createQuiz(cat: string, difficulty: string): void {
+    console.log(cat)
     this.questions$ = this.quizService.createQuiz(cat, difficulty as Difficulty);
-  }
+  }*/
+  
 }

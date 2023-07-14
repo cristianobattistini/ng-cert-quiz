@@ -1,6 +1,17 @@
-export interface Category {
-  id: number;
+export type Optional<T> = T | undefined | null;
+
+
+export interface MinimalCategory {
   name: string;
+}
+
+export interface Category extends MinimalCategory {
+  id?: number;
+  topicName ?: string;
+}
+
+export interface CategoryDetails extends Category{
+  subCategories?: Category[];
 }
 
 export interface ApiQuestion {
