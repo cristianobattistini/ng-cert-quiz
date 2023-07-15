@@ -49,6 +49,7 @@ export class QuizService {
       return result;
     }, []);
     categoryDetailsArray = [...categoryDetailsArray, ...groupedCategories];
+    console.log(categoryDetailsArray)
     return of(categoryDetailsArray);
   }
 

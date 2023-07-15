@@ -1,21 +1,32 @@
-<div class="row">
-  <div class="col-sm-11">
-    <select #category id="categorySelect">
-      <option>Select category</option>
-      <option [value]="category.id" *ngFor="let category of categories$ | async">
-        {{category.name}}
-      </option>
-    </select>
-    <select #difficulty id="difficultySelect">
-      <option>Select difficulty</option>
-      <option>Easy</option>
-      <option>Medium</option>
-      <option>Hard</option>
-    </select>
-    <button class="primary" id="createBtn" (click)="createQuiz(category.value, difficulty.value)">Create</button>
-  </div>
+<!-- [formGroup]="creationQuizForm" -->
+<ng-container *ngIf="!isLoading">
+  <div class="row" [formGroup]="creationQuizForm">
+    <div class="col-sm-11">
+      <select [formControl]="categorySelect" #category id="categorySelect">
+        <option [value]="null">Select category</option>
+        <option [value]="category.name" *ngFor="let category of categories">
+          {{category.name}}
+        </option>
+      </select>
+      <ng-container *ngIf="subCategories">
+        <select [formControl]="subCategorySelect" #subcategory id="subcategorySelect">
+          <option [value]="null">Select sub category</option>
+          <option [value]="category.name" *ngFor="let category of subCategories">
+            {{category.name}}
+          </option>
+        </select>
+      </ng-container>
+      <select [formControl]="difficultySelect" #difficulty id="difficultySelect">
+        <option [value]="null">Select difficulty</option>
+        <option>Easy</option>
+        <option>Medium</option>
+        <option>Hard</option>
+      </select>
+      <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid"(click)="createQuiz(category.value, difficulty.value)">Create</button>
+    </div>
 
-</div>
-<div class="row">
-   <app-quiz [questions]="questions$ | async" ></app-quiz>
-</div>
+  </div>
+  <div class="row">
+    <app-quiz [questions]="questions$ | async" ></app-quiz>
+  </div>
+</ng-container>
