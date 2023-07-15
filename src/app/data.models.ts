@@ -37,4 +37,8 @@ export interface Results {
 }
 
 
-export type Difficulty = "Easy" | "Medium" | "Hard";
+export type DifficultyType = "Easy" | "Medium" | "Hard";
+
+export interface Difficulty {
+  level: DifficultyType;
+}

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, of } from 'rxjs';
-import { Category, Difficulty, ApiQuestion, Question, Results, CategoryDetails } from './data.models';
+import { Category, DifficultyType, ApiQuestion, Question, Results, CategoryDetails } from './data.models';
 import { switchMap } from 'rxjs/operators';
+import { SUB_CATEGORY_SEPARATOR } from './shared/constants/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +27,7 @@ export class QuizService {
     const subCategories: Category[] = [];
     let categoryDetailsArray: CategoryDetails[] = [];
     categories.forEach(category => {
-      const nameParts = category.name.split(':');
+      const nameParts = category.name.split(SUB_CATEGORY_SEPARATOR);
       if (nameParts.length > 1) {
         const categoryName = nameParts[0].trim();
         const subCategoryName = nameParts[1].trim();
@@ -49,17 +50,15 @@ export class QuizService {
       return result;
     }, []);
     categoryDetailsArray = [...categoryDetailsArray, ...groupedCategories];
-    console.log(categoryDetailsArray)
     return of(categoryDetailsArray);
   }
 
 
-  createQuiz(categoryId: string, difficulty: Difficulty): Observable<Question[]> {
+  createQuiz(categoryId: string, difficulty: DifficultyType): Observable<Question[]> {
     return this.http.get<{ results: ApiQuestion[] }>(
       `${this.API_URL}/api.php?amount=5&category=${categoryId}&difficulty=${difficulty.toLowerCase()}&type=multiple`)
       .pipe(
         map(res => {
-          console.log(res)
           const quiz: Question[] = res.results.map(q => (
             { ...q, all_answers: [...q.incorrect_answers, q.correct_answer].sort(() => (Math.random() > 0.5) ? 1 : -1) }
           ));

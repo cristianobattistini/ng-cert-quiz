@@ -1,8 +1,9 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Category, CategoryDetails, Difficulty, Optional, Question} from '../data.models';
+import {Category, CategoryDetails, Difficulty, DifficultyType, Optional, Question} from '../data.models';
 import {Observable, Subject, takeUntil} from 'rxjs';
 import {QuizService} from '../quiz.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { QUIZ_DIFFICULTIES } from '../shared/constants/constants';
 
 @Component({
   selector: 'app-quiz-maker',
@@ -16,11 +17,14 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   subCategories: Optional<Category[]>;
   questions$!: Observable<Question[]>;
   selectedCategory : Optional<CategoryDetails>;
+  lastSelectedCategory : Optional<CategoryDetails>;
   creationQuizForm!: FormGroup;
+  quizDifficulties = QUIZ_DIFFICULTIES;
+
 
   categorySelect : FormControl<Optional<String>> = new FormControl<Optional<String>>(null, [Validators.required]);
   subCategorySelect : FormControl<Optional<String>> = new FormControl<Optional<String>>(null);
-  difficultySelect : FormControl<Optional<String>> = new FormControl<Optional<String>>(null, [Validators.required]);
+  difficultySelect : FormControl<Optional<DifficultyType>> = new FormControl<Optional<DifficultyType>>(null, [Validators.required]);
 
   protected _onDestroy: Subject<void> = new Subject<void>();
   isLoading = true;
@@ -38,33 +42,43 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: (error) => {
-        console.log(error);
         this.isLoading = false;
       }
     });
     this.initForm();
 
-    this.categorySelect.valueChanges.subscribe((value: Optional<String>) => {
-      this.selectedCategory = this.categories.find(category => category.name === value)
+    this.categorySelect.valueChanges.pipe(
+      takeUntil(this._onDestroy)
+    ).subscribe((value: Optional<String>) => {
+      this.selectedCategory = this.categories.find(category => category.name === value);
       this.subCategories = this.selectedCategory?.subCategories;
       if(this.subCategories){
         // add validation to form control subcategories
+        this.subCategorySelect.setValidators([Validators.required]);
       }else{
         // remove validation from form control subcategories
+        this.subCategorySelect.clearValidators();
       }
       this.subCategorySelect.reset(null);
+      this.creationQuizForm.updateValueAndValidity();
     })
   }
 
-  createQuiz(cat: string, difficulty: string): void {
-    this.questions$ = this.quizService.createQuiz(cat, difficulty as Difficulty);
+  createQuiz(): void {
+    const subCategoryChosen = this.subCategorySelect.value;
+    const difficulty = this.difficultySelect.value!;
+    if(this.selectedCategory && subCategoryChosen){
+      const topicName = this.selectedCategory.name;
+      this.selectedCategory = this.selectedCategory?.subCategories?.find(subCategory => subCategory.name === subCategoryChosen);
+      if(this.selectedCategory){
+        this.selectedCategory.topicName = topicName;
+      }
+    }
+    const categoryId = this.selectedCategory?.id?.toString()!;
+    this.lastSelectedCategory = this.selectedCategory;
+    this.resetForm();
+    this.questions$ = this.quizService.createQuiz(categoryId, difficulty);
   }
-
-  onCategoryChange(category: CategoryDetails): void {
-    console.log(category)
-    console.log(this.selectedCategory)
-  }
-  
 
   private initForm() {
     this.creationQuizForm = this.fb.group({
@@ -73,18 +87,11 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
       difficultySelect: this.difficultySelect,
     });
   }
-  /*categories$: Observable<Category[]>;
-  questions$!: Observable<Question[]>;
 
-  constructor(protected quizService: QuizService) {
-    this.categories$ = quizService.getAllCategories()
+  resetForm(){
+    this.creationQuizForm.reset();
   }
 
-  createQuiz(cat: string, difficulty: string): void {
-    console.log(cat)
-    this.questions$ = this.quizService.createQuiz(cat, difficulty as Difficulty);
-  }*/
-  
   ngOnDestroy(): void {
     this._onDestroy.next();
     this._onDestroy.complete();

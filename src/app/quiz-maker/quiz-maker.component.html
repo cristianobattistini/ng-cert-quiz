@@ -3,29 +3,36 @@
   <div class="row" [formGroup]="creationQuizForm">
     <div class="col-sm-11">
       <select [formControl]="categorySelect" #category id="categorySelect">
-        <option [value]="null">Select category</option>
+        <option [value]="null" disabled selected>Select category</option>
         <option [value]="category.name" *ngFor="let category of categories">
           {{category.name}}
         </option>
       </select>
       <ng-container *ngIf="subCategories">
         <select [formControl]="subCategorySelect" #subcategory id="subcategorySelect">
-          <option [value]="null">Select sub category</option>
+          <option [value]="null" disabled selected>Select sub category</option>
           <option [value]="category.name" *ngFor="let category of subCategories">
             {{category.name}}
           </option>
         </select>
       </ng-container>
       <select [formControl]="difficultySelect" #difficulty id="difficultySelect">
-        <option [value]="null">Select difficulty</option>
-        <option>Easy</option>
-        <option>Medium</option>
-        <option>Hard</option>
+        <option [value]="null" disabled selected>Select difficulty</option>
+        <option [value]="diff.level" *ngFor="let diff of quizDifficulties">
+          {{ diff.level }}
+        </option>
       </select>
-      <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid"(click)="createQuiz(category.value, difficulty.value)">Create</button>
+      <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid" 
+          (click)="createQuiz()">Create</button>
+      <button class="primary" type="button" [disabled]="!creationQuizForm.dirty" (click)="resetForm()">
+        Reset Form
+      </button>
     </div>
-
   </div>
+  <ng-container *ngIf="lastSelectedCategory">
+    <h3>
+      <ng-container *ngIf="lastSelectedCategory.topicName">{{ lastSelectedCategory.topicName | uppercase}}:</ng-container> {{ lastSelectedCategory.name | uppercase}}</h3>
+  </ng-container>
   <div class="row">
     <app-quiz [questions]="questions$ | async" ></app-quiz>
   </div>

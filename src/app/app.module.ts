@@ -16,7 +16,7 @@ import { AnswersComponent } from './answers/answers.component';
     QuizMakerComponent,
     QuizComponent,
     QuestionComponent,
-    AnswersComponent
+    AnswersComponent,
   ],
   imports: [
     BrowserModule,
