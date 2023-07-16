@@ -1,5 +1,8 @@
 <!-- [formGroup]="creationQuizForm" -->
-<ng-container *ngIf="!isLoading">
+<ng-container *ngIf="isLoading, else quizContainer">
+  <app-loading-ellipsis></app-loading-ellipsis>
+</ng-container>
+<ng-template  #quizContainer>
   <div class="row" [formGroup]="creationQuizForm">
     <div class="col-sm-11">
       <select [formControl]="categorySelect" #category id="categorySelect">
@@ -23,17 +26,24 @@
         </option>
       </select>
       <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid" 
-          (click)="createQuiz()">Create</button>
-      <button class="primary" type="button" [disabled]="!creationQuizForm.dirty" (click)="resetForm()">
+          (click)="createQuiz()">Create Quiz</button>
+      <button class="primary" type="button" class="warning-btn" [disabled]="!creationQuizForm.dirty" (click)="resetForm()">
         Reset Form
       </button>
     </div>
   </div>
+  <ng-container *ngIf="isLoadingQuestion, else questionsContainer">
+    <app-loading-ellipsis></app-loading-ellipsis>
+  </ng-container>
+</ng-template>
+
+
+<ng-template #questionsContainer>
   <ng-container *ngIf="lastSelectedCategory">
     <h3>
       <ng-container *ngIf="lastSelectedCategory.topicName">{{ lastSelectedCategory.topicName | uppercase}}:</ng-container> {{ lastSelectedCategory.name | uppercase}}</h3>
   </ng-container>
-  <div class="row">
-    <app-quiz [questions]="questions$ | async" ></app-quiz>
+  <div class="row" *ngIf="questions">
+    <app-quiz [questions]="questions" ></app-quiz>
   </div>
-</ng-container>
+</ng-template>

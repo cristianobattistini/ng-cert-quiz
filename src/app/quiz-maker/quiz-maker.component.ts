@@ -4,18 +4,19 @@ import {Observable, Subject, takeUntil} from 'rxjs';
 import {QuizService} from '../quiz.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { QUIZ_DIFFICULTIES } from '../shared/constants/constants';
+import { LoadingEllipsisComponent } from '../shared/components/loading-ellipsis/loading-ellipsis.component';
 
 @Component({
   selector: 'app-quiz-maker',
   templateUrl: './quiz-maker.component.html',
-  styleUrls: ['./quiz-maker.component.css']
+  styleUrls: ['./quiz-maker.component.css'],
 })
 export class QuizMakerComponent implements OnInit, OnDestroy {
 
   //categories$: Observable<CategoryDetails[]>;
   categories: CategoryDetails[] = [];
   subCategories: Optional<Category[]>;
-  questions$!: Observable<Question[]>;
+  questions: Optional<Question[]>;
   selectedCategory : Optional<CategoryDetails>;
   lastSelectedCategory : Optional<CategoryDetails>;
   creationQuizForm!: FormGroup;
@@ -27,7 +28,8 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   difficultySelect : FormControl<Optional<DifficultyType>> = new FormControl<Optional<DifficultyType>>(null, [Validators.required]);
 
   protected _onDestroy: Subject<void> = new Subject<void>();
-  isLoading = true;
+  isLoading: boolean = true;
+  isLoadingQuestion: boolean = false;
 
   constructor(protected quizService: QuizService,
               private fb: FormBuilder
@@ -77,7 +79,18 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
     const categoryId = this.selectedCategory?.id?.toString()!;
     this.lastSelectedCategory = this.selectedCategory;
     this.resetForm();
-    this.questions$ = this.quizService.createQuiz(categoryId, difficulty);
+    this.isLoadingQuestion = true;
+    this.quizService.createQuiz(categoryId, difficulty).pipe(
+      takeUntil(this._onDestroy)
+    ).subscribe({
+      next: (questions: Question[]) => {
+        this.questions = questions;
+        this.isLoadingQuestion = false;
+      },
+      error: (error) => {
+        this.isLoadingQuestion = false;
+      }
+    });
   }
 
   private initForm() {

@@ -2,3 +2,7 @@ button:disabled {
     background: rgb(156, 149, 149);
 }
   
+.warning-btn{
+    background: red;
+    color: white;
+}

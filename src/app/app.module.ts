@@ -9,6 +9,8 @@ import {QuizMakerComponent} from './quiz-maker/quiz-maker.component';
 import { QuizComponent } from './quiz/quiz.component';
 import { QuestionComponent } from './question/question.component';
 import { AnswersComponent } from './answers/answers.component';
+import { LoadingEllipsisComponent } from './shared/components/loading-ellipsis/loading-ellipsis.component';
+import { AutoFilterDropdownComponent } from './shared/components/auto-filter-dropdown/auto-filter-dropdown.component';
 
 @NgModule({
   declarations: [
@@ -17,13 +19,15 @@ import { AnswersComponent } from './answers/answers.component';
     QuizComponent,
     QuestionComponent,
     AnswersComponent,
+    AutoFilterDropdownComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    LoadingEllipsisComponent
   ],
   providers: [],
   bootstrap: [AppComponent]
