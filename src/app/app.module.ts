@@ -11,6 +11,7 @@ import { QuestionComponent } from './question/question.component';
 import { AnswersComponent } from './answers/answers.component';
 import { LoadingEllipsisComponent } from './shared/components/loading-ellipsis/loading-ellipsis.component';
 import { AutoFilterDropdownComponent } from './shared/components/auto-filter-dropdown/auto-filter-dropdown.component';
+import { ToggleComponent } from './shared/components/toggle/toggle.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { AutoFilterDropdownComponent } from './shared/components/auto-filter-dro
     QuestionComponent,
     AnswersComponent,
     AutoFilterDropdownComponent,
+    ToggleComponent,
   ],
   imports: [
     BrowserModule,

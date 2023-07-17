@@ -1,1 +1,23 @@
-<p>auto-filter-dropdown works!</p>
+<ng-container *ngIf="formGroup, else withoutForm">
+    <div [formGroup]="formGroup">
+        <ng-container  [ngTemplateOutlet]="inputContainer"></ng-container>
+    </div>
+</ng-container>
+
+<ng-template #withoutForm>
+    <div>
+        <ng-container  [ngTemplateOutlet]="inputContainer"></ng-container>
+    </div>
+</ng-template>
+  
+<ng-template #inputContainer>
+    <input type="text" [formControl]="filterInputControl" class="auto-filter-input" />
+    <ng-container *ngIf="filteredOptions$ | async as filteredOptions">
+        <ul class="auto-filter-list">
+            <li *ngFor="let option of filteredOptions" (click)="selectOption(option)">
+                {{ getValueForListElement(option) }}
+            </li>
+        </ul>
+    </ng-container>
+</ng-template>
+  <!-- [innerHTML]="highlightMatch(category)" -->

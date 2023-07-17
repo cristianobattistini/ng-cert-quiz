@@ -1,10 +1,9 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Category, CategoryDetails, Difficulty, DifficultyType, Optional, Question} from '../data.models';
-import {Observable, Subject, takeUntil} from 'rxjs';
+import {Category, CategoryDetails, DifficultyType, Optional, Question} from '../data.models';
+import { Subject, takeUntil} from 'rxjs';
 import {QuizService} from '../quiz.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { QUIZ_DIFFICULTIES } from '../shared/constants/constants';
-import { LoadingEllipsisComponent } from '../shared/components/loading-ellipsis/loading-ellipsis.component';
 
 @Component({
   selector: 'app-quiz-maker',
@@ -21,6 +20,8 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   lastSelectedCategory : Optional<CategoryDetails>;
   creationQuizForm!: FormGroup;
   quizDifficulties = QUIZ_DIFFICULTIES;
+
+  enableDynamicQuizCreation = false;
 
 
   categorySelect : FormControl<Optional<String>> = new FormControl<Optional<String>>(null, [Validators.required]);
@@ -104,6 +105,11 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   resetForm(){
     this.creationQuizForm.reset();
   }
+
+  onToggleChange($event: boolean){
+    this.enableDynamicQuizCreation = $event;
+  }
+
 
   ngOnDestroy(): void {
     this._onDestroy.next();

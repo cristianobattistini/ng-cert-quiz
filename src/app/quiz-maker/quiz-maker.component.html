@@ -3,35 +3,38 @@
   <app-loading-ellipsis></app-loading-ellipsis>
 </ng-container>
 <ng-template  #quizContainer>
-  <div class="row" [formGroup]="creationQuizForm">
-    <div class="col-sm-11">
-      <select [formControl]="categorySelect" #category id="categorySelect">
-        <option [value]="null" disabled selected>Select category</option>
-        <option [value]="category.name" *ngFor="let category of categories">
-          {{category.name}}
-        </option>
-      </select>
-      <ng-container *ngIf="subCategories">
-        <select [formControl]="subCategorySelect" #subcategory id="subcategorySelect">
-          <option [value]="null" disabled selected>Select sub category</option>
-          <option [value]="category.name" *ngFor="let category of subCategories">
-            {{category.name}}
-          </option>
-        </select>
-      </ng-container>
-      <select [formControl]="difficultySelect" #difficulty id="difficultySelect">
-        <option [value]="null" disabled selected>Select difficulty</option>
-        <option [value]="diff.level" *ngFor="let diff of quizDifficulties">
-          {{ diff.level }}
-        </option>
-      </select>
-      <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid" 
-          (click)="createQuiz()">Create Quiz</button>
-      <button class="primary" type="button" class="warning-btn" [disabled]="!creationQuizForm.dirty" (click)="resetForm()">
-        Reset Form
-      </button>
+  <app-toggle text="Enable dynamic quiz creation" (toggleChange)="onToggleChange($event)"></app-toggle>
+  <ng-container *ngIf="!enableDynamicQuizCreation, else dynamicQuizCreation">
+      <div class="row" [formGroup]="creationQuizForm">
+        <div class="col-sm-11">
+          <select [formControl]="categorySelect" #category id="categorySelect">
+            <option [value]="null" disabled selected>Select category</option>
+            <option [value]="category.name" *ngFor="let category of categories">
+              {{category.name}}
+            </option>
+          </select>
+          <ng-container *ngIf="subCategories">
+            <select [formControl]="subCategorySelect" #subcategory id="subcategorySelect">
+              <option [value]="null" disabled selected>Select sub category</option>
+              <option [value]="category.name" *ngFor="let category of subCategories">
+                {{category.name}}
+              </option>
+            </select>
+          </ng-container>
+          <select [formControl]="difficultySelect" #difficulty id="difficultySelect">
+            <option [value]="null" disabled selected>Select difficulty</option>
+            <option [value]="diff.level" *ngFor="let diff of quizDifficulties">
+              {{ diff.level }}
+            </option>
+          </select>
+        <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid" 
+            (click)="createQuiz()">Create Quiz</button>
+        <button class="primary" type="button" class="warning-btn" [disabled]="!creationQuizForm.dirty" (click)="resetForm()">
+          Reset Form
+        </button>
+      </div>
     </div>
-  </div>
+  </ng-container>
   <ng-container *ngIf="isLoadingQuestion, else questionsContainer">
     <app-loading-ellipsis></app-loading-ellipsis>
   </ng-container>
@@ -46,4 +49,8 @@
   <div class="row" *ngIf="questions">
     <app-quiz [questions]="questions" ></app-quiz>
   </div>
+</ng-template>
+
+<ng-template #dynamicQuizCreation>
+  <p>pippo</p>
 </ng-template>

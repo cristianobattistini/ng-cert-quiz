@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { AsyncValidatorFn, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Observable, Subject, debounceTime, distinctUntilChanged, map, of, switchMap, takeUntil } from 'rxjs';
 import { Optional } from 'src/app/data.models';
 
 export interface AutoFilterBackdrownObject{
@@ -14,7 +14,7 @@ export interface AutoFilterBackdrownObject{
 })
 export class AutoFilterDropdownComponent {
   
-  @Input() categories: Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
+  @Input() options: Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
   @Input() formGroup: Optional<FormGroup>;
   @Input() filterRegex: Optional<RegExp>;
   @Input() customValidators: Optional<ValidatorFn[]>;
@@ -23,61 +23,89 @@ export class AutoFilterDropdownComponent {
   @Input() loadOptions: Optional<(filterValue: string) => Observable<AutoFilterBackdrownObject[] | string[]>>;
 
 
-  filteredCategories:Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
+  filteredOptions: Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
+  filteredOptions$!: Observable<string[]>;
 
   filterInputControl : FormControl = new FormControl();
 
+  protected _onDestroy: Subject<void> = new Subject<void>();
+
+
   constructor() {}
 
-  /*
+  
   filterCategories() {
-    const filterValue = this.formGroup.get('filterInput').value.toLowerCase();
+    const filterValue = this.filterInputControl.value.toLowerCase();
 
     if (this.loadOptions) {
-      this.loadOptions(filterValue)
+      this.filteredOptions$ = this.loadOptions(filterValue)
         .pipe(
+          takeUntil(this._onDestroy),
           debounceTime(300), // Optional debounce time to limit API requests
           distinctUntilChanged(), // Optional distinct until the filter value changes
-          switchMap((categories: AutoFilterBackdrownObject[] | string[]) =>
-            this.applyFilters(categories, filterValue)
-          )
+          switchMap((options: AutoFilterBackdrownObject[] | string[]) =>{
+            this.options = options;
+            return this.applyFilters(filterValue)
+          }),
+          map((options) => {
+            if (typeof options[0] === 'string') {
+              const optionsList = options as string[];
+              return optionsList;
+            } else {
+              return options.map((option) => {
+                const opt = option as AutoFilterBackdrownObject;
+                return opt.name;
+              });
+            }
+          })
         )
-        .subscribe((filtered) => {
-          this.filteredCategories = filtered;
-        });
+        /*.subscribe((filtered) => {
+          this.filteredOptions = filtered;
+        });*/
     } else {
       // Fallback to local filtering if no loadOptions function is provided
-      const categories = this.formGroup.get('categories').value;
-      this.applyFilters(categories, filterValue).subscribe((filtered) => {
-        this.filteredCategories = filtered;
-      });
+      this.filteredOptions$ = this.applyFilters(filterValue).pipe(
+        map((options) => {
+          if (typeof options[0] === 'string') {
+            const optionsList = options as string[];
+            return optionsList;          
+          } else {
+            return options.map((option) => {
+              const opt = option as AutoFilterBackdrownObject;
+              return opt.name;
+            });
+          }
+        })
+      )
+      /*.subscribe((filtered) => {
+        this.filteredOptions = filtered;
+      });*/
     }
   }
-  */
+  
 
-  filterCategories(value: string) {
+  applyFilters(value: string) : Observable<AutoFilterBackdrownObject[] | string[]> {
     const filterValue = value.toLowerCase();
     let filtered: AutoFilterBackdrownObject[] | string[];
 
-    if (this.categories && this.categories.length > 0) {
-      if (typeof this.categories[0] === 'string') {
+    if (this.options && this.options.length > 0) {
+      if (typeof this.options[0] === 'string') {
         // Array of strings
-        const categories = this.categories as string[];
-        filtered = categories.filter((category: string) =>
+        const options = this.options as string[];
+        filtered = options.filter((category: string) =>
           category.toLowerCase().includes(filterValue)
         );
       } else {
-        const categories = this.categories as AutoFilterBackdrownObject[];
+        const options = this.options as AutoFilterBackdrownObject[];
         // Array of objects with 'name' property
-        filtered = categories.filter((category: AutoFilterBackdrownObject) =>
+        filtered = options.filter((category: AutoFilterBackdrownObject) =>
           category.name.toLowerCase().includes(filterValue)
         );
       }
     } else {
       filtered = [];
     }
-
-    this.filteredCategories = filtered;
+    return of(filtered);
   }
 
   highlightMatch(category: AutoFilterBackdrownObject | string): string {
@@ -115,13 +143,64 @@ export class AutoFilterDropdownComponent {
     }
     if(this.AtLeastOneCorrectOptionDigited){
       //implement ad hoc validator that check that at least one correct option is chosen
+      this.filterInputControl.addValidators(this.inCategoriesValidator)
     }
     this.formGroup?.addControl('filterInput', this.filterInputControl);
 
     this.filterInputControl.valueChanges.pipe(
-
+      takeUntil(this._onDestroy)
     ).subscribe((value: string) => {
-      this.filterCategories(value);
+      this.filterCategories();
     });
   }
+
+  inCategoriesValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const inputValue = control.value;
+      if(this.options && this.options instanceof Array){
+        let atLeastOneOption = false;
+        this.options.forEach((opt: string | AutoFilterBackdrownObject) => {
+          if(typeof opt === 'string' && opt === inputValue){
+            atLeastOneOption = true;
+          }else{
+            const option = opt as AutoFilterBackdrownObject;
+            if(option.name === inputValue){
+              atLeastOneOption = true;
+            }
+          }
+        })
+        if(atLeastOneOption){
+          return null;
+        }
+      }
+        return { inCategories: true }; // The input is not present in options, error
+      };
+  }
+
+  selectOption(option: string) {
+    this.filterInputControl.setValue(option);
+  }
+
+  trackByFn(index: number, item: AutoFilterBackdrownObject | string) {
+    if (typeof item === 'string') {
+      return item;
+    } else {
+      return item.name;
+    }
+  }
+
+  getValueForListElement(item: AutoFilterBackdrownObject | string){
+    if (typeof item === 'string') {
+      return item;
+    } else {
+      return item.name;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this._onDestroy.next();
+    this._onDestroy.complete();
+  }
+
+
 }
