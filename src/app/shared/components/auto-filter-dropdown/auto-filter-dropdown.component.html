@@ -11,13 +11,19 @@
 </ng-template>
   
 <ng-template #inputContainer>
-    <input type="text" [formControl]="filterInputControl" class="auto-filter-input" />
+    <input #inputElement type="text" [formControl]="filterInputControl" class="auto-filter-input" [placeholder]="placeholder" />
     <ng-container *ngIf="filteredOptions$ | async as filteredOptions">
-        <ul class="auto-filter-list">
-            <li *ngFor="let option of filteredOptions" (click)="selectOption(option)">
-                {{ getValueForListElement(option) }}
-            </li>
-        </ul>
+        <ng-container *ngIf="filteredOptions.length > 0">
+            <ul   
+                [style.top.px]="inputPosition.top"
+                [style.left.px]="inputPosition.left"
+                [style.width.px]="inputPosition.width"
+                class="auto-filter-list">
+                <li *ngFor="let option of filteredOptions" (click)="selectOption(option)">
+                    <span [innerHTML]="highlightMatch(option)"></span>
+                </li>
+            </ul>
+        </ng-container>
     </ng-container>
 </ng-template>
   <!-- [innerHTML]="highlightMatch(category)" -->

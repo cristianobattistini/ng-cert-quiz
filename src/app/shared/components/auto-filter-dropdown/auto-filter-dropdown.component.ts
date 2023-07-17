@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Observable, Subject, debounceTime, distinctUntilChanged, map, of, switchMap, takeUntil } from 'rxjs';
 import { Optional } from 'src/app/data.models';
@@ -15,27 +15,46 @@ export interface AutoFilterBackdrownObject{
 export class AutoFilterDropdownComponent {
   
   @Input() options: Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
-  @Input() formGroup: Optional<FormGroup>;
+  @Input("baseFormGroup") formGroup: Optional<FormGroup>;
   @Input() filterRegex: Optional<RegExp>;
   @Input() customValidators: Optional<ValidatorFn[]>;
   @Input() asyncValidators?: Optional<AsyncValidatorFn[]>;
   @Input() AtLeastOneCorrectOptionDigited: boolean = false;
+  @Input() required: boolean = false;
+  @Input() placeholder: string = "Digit..."
   @Input() loadOptions: Optional<(filterValue: string) => Observable<AutoFilterBackdrownObject[] | string[]>>;
-
-
+  @Input() controlName: string = "filterInput";
+  @Output() valueChange: EventEmitter<string> = new EventEmitter<string>();
+  
   filteredOptions: Optional<AutoFilterBackdrownObject[]> | Optional<string[]>;
   filteredOptions$!: Observable<string[]>;
 
   filterInputControl : FormControl = new FormControl();
 
+  @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
+
+  inputPosition = { top: 0, left: 0, width: 0 };
+
   protected _onDestroy: Subject<void> = new Subject<void>();
+
+  mapToStringArray$ = map((options: string[] | AutoFilterBackdrownObject[]) => {
+    if (typeof options[0] === 'string') {
+      const optionsList = options as string[];
+      return optionsList;
+    } else {
+      return options.map((option) => {
+        const opt = option as AutoFilterBackdrownObject;
+        return opt.name;
+      });
+    }
+  })
 
 
   constructor() {}
 
   
   filterCategories() {
-    const filterValue = this.filterInputControl.value.toLowerCase();
+    const filterValue = this.filterInputControl?.value?.toLowerCase();
 
     if (this.loadOptions) {
       this.filteredOptions$ = this.loadOptions(filterValue)
@@ -59,9 +78,6 @@ export class AutoFilterDropdownComponent {
             }
           })
         )
-        /*.subscribe((filtered) => {
-          this.filteredOptions = filtered;
-        });*/
     } else {
       // Fallback to local filtering if no loadOptions function is provided
       this.filteredOptions$ = this.applyFilters(filterValue).pipe(
@@ -77,15 +93,12 @@ export class AutoFilterDropdownComponent {
           }
         })
       )
-      /*.subscribe((filtered) => {
-        this.filteredOptions = filtered;
-      });*/
     }
   }
   
 
   applyFilters(value: string) : Observable<AutoFilterBackdrownObject[] | string[]> {
-    const filterValue = value.toLowerCase();
+    const filterValue = value?.toLowerCase();
     let filtered: AutoFilterBackdrownObject[] | string[];
 
     if (this.options && this.options.length > 0) {
@@ -108,29 +121,46 @@ export class AutoFilterDropdownComponent {
     return of(filtered);
   }
 
-  highlightMatch(category: AutoFilterBackdrownObject | string): string {
-    const filterValue = this.formGroup?.get('filterInput')?.value.toLowerCase();
-    let categoryName: string;
+  
+  highlightMatch(option: AutoFilterBackdrownObject | string): string {
+    const filterValue = this.filterInputControl?.value.toLowerCase();
+    let optionName: string =  this.getValueForListElement(option)
 
-    if (typeof category === 'string') {
-      categoryName = category;
-    } else {
-      categoryName = category.name;
-    }
-
-    const index = categoryName.toLowerCase().indexOf(filterValue);
+    const index = optionName.toLowerCase().indexOf(filterValue);
 
     if (index >= 0) {
-      const prefix = categoryName.substring(0, index);
-      const match = categoryName.substring(index, index + filterValue.length);
-      const suffix = categoryName.substring(index + filterValue.length);
+      const prefix = optionName.substring(0, index);
+      const match = optionName.substring(index, index + filterValue.length);
+      const suffix = optionName.substring(index + filterValue.length);
       return `${prefix}<strong>${match}</strong>${suffix}`;
     }
 
-    return categoryName;
+    return optionName;
   }
 
   ngOnInit() {
+    this.setupFormControl();
+
+    this.filterInputControl.valueChanges.pipe(
+      takeUntil(this._onDestroy)
+    ).subscribe((value: string) => {
+      this.filterCategories();
+      this.valueChange.emit(value);
+    });
+  }
+
+
+
+  ngAfterViewInit() {
+    const inputRect = this.inputElement.nativeElement.getBoundingClientRect();
+    this.inputPosition = {
+      top: inputRect.top + inputRect.height,
+      left: inputRect.left,
+      width: inputRect.width
+    };
+  }
+
+  setupFormControl(){
     if(this.filterRegex){
       this.filterInputControl.addValidators(Validators.pattern(this.filterRegex));
     }
@@ -139,19 +169,15 @@ export class AutoFilterDropdownComponent {
     }
     if(this.asyncValidators){
       this.filterInputControl.addAsyncValidators(this.asyncValidators);
-
     }
     if(this.AtLeastOneCorrectOptionDigited){
-      //implement ad hoc validator that check that at least one correct option is chosen
-      this.filterInputControl.addValidators(this.inCategoriesValidator)
+      this.filterInputControl.addValidators(this.inCategoriesValidator())
     }
-    this.formGroup?.addControl('filterInput', this.filterInputControl);
-
-    this.filterInputControl.valueChanges.pipe(
-      takeUntil(this._onDestroy)
-    ).subscribe((value: string) => {
-      this.filterCategories();
-    });
+    if(this.required){
+      this.filterInputControl.addValidators(Validators.required)
+    }
+    this.formGroup?.addControl(this.controlName, this.filterInputControl);
+    this.formGroup?.updateValueAndValidity();
   }
 
   inCategoriesValidator(): ValidatorFn {
@@ -179,14 +205,7 @@ export class AutoFilterDropdownComponent {
 
   selectOption(option: string) {
     this.filterInputControl.setValue(option);
-  }
-
-  trackByFn(index: number, item: AutoFilterBackdrownObject | string) {
-    if (typeof item === 'string') {
-      return item;
-    } else {
-      return item.name;
-    }
+    this.filteredOptions$ = of([]);
   }
 
   getValueForListElement(item: AutoFilterBackdrownObject | string){
@@ -200,6 +219,8 @@ export class AutoFilterDropdownComponent {
   ngOnDestroy(): void {
     this._onDestroy.next();
     this._onDestroy.complete();
+    this.formGroup?.removeControl(this.controlName);
+    this.formGroup?.updateValueAndValidity();
   }
 
 

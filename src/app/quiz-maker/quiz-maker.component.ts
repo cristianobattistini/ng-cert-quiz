@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {Category, CategoryDetails, DifficultyType, Optional, Question} from '../data.models';
 import { Subject, takeUntil} from 'rxjs';
 import {QuizService} from '../quiz.service';
@@ -31,9 +31,11 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   protected _onDestroy: Subject<void> = new Subject<void>();
   isLoading: boolean = true;
   isLoadingQuestion: boolean = false;
+  subCategoryChosen: Optional<String>;
 
   constructor(protected quizService: QuizService,
-              private fb: FormBuilder
+              private fb: FormBuilder,
+              private cdRef: ChangeDetectorRef
             ) {}
 
   ngOnInit(){
@@ -49,6 +51,7 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
       }
     });
     this.initForm();
+
 
     this.categorySelect.valueChanges.pipe(
       takeUntil(this._onDestroy)
@@ -68,11 +71,13 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   }
 
   createQuiz(): void {
-    const subCategoryChosen = this.subCategorySelect.value;
+    if(!this.subCategoryChosen){
+      this.subCategoryChosen = this.subCategorySelect.value;
+    }
     const difficulty = this.difficultySelect.value!;
-    if(this.selectedCategory && subCategoryChosen){
+    if(this.selectedCategory && this.subCategoryChosen){
       const topicName = this.selectedCategory.name;
-      this.selectedCategory = this.selectedCategory?.subCategories?.find(subCategory => subCategory.name === subCategoryChosen);
+      this.selectedCategory = this.selectedCategory?.subCategories?.find(subCategory => subCategory.name.toLowerCase() === this.subCategoryChosen?.toLowerCase());
       if(this.selectedCategory){
         this.selectedCategory.topicName = topicName;
       }
@@ -81,6 +86,7 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
     this.lastSelectedCategory = this.selectedCategory;
     this.resetForm();
     this.isLoadingQuestion = true;
+    this.subCategoryChosen = null;
     this.quizService.createQuiz(categoryId, difficulty).pipe(
       takeUntil(this._onDestroy)
     ).subscribe({
@@ -107,8 +113,33 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   }
 
   onToggleChange($event: boolean){
+    this.resetForm();
     this.enableDynamicQuizCreation = $event;
+    if(this.enableDynamicQuizCreation){
+      this.categorySelect.setValidators(null);
+      this.subCategorySelect.setValidators(null);
+    }else{
+      this.categorySelect.setValidators(Validators.required);
+    }
   }
+
+  onCategoryInputChange($event: string){
+    if($event){
+      this.selectedCategory = this.categories.find(category => category.name.toLowerCase() === $event.toLowerCase());
+      this.subCategories = this.selectedCategory?.subCategories;
+    }
+    this.creationQuizForm.updateValueAndValidity();
+    this.cdRef.detectChanges();
+  }
+
+  onSubCategoryInputChange($event: string){
+    if($event){
+      this.subCategoryChosen = $event
+    }else{
+      this.subCategoryChosen = null;
+    }
+  }
+
 
 
   ngOnDestroy(): void {

@@ -5,4 +5,32 @@ button:disabled {
 .warning-btn{
     background: red;
     color: white;
+    height: 49px;
+    margin: 4px;
+}
+
+.auto-filter-input{
+    width: 250px;
+    margin-right: 4px;
+}
+
+.container{
+    display: flex;
+}
+
+#createBtn{
+    height: 49px;
+    margin: 4px;
+}
+
+#categorySelect{
+    height: 49px;
+}
+
+#subcategorySelect{
+    height: 49px;
+}
+
+#difficultySelect{
+    height: 49px;
 }

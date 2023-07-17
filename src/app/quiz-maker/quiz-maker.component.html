@@ -52,5 +52,38 @@
 </ng-template>
 
 <ng-template #dynamicQuizCreation>
-  <p>pippo</p>
+  <div class="container" [formGroup]="creationQuizForm">
+      <div class="auto-filter-input">
+          <app-auto-filter-dropdown 
+                  [options]="categories"
+                  [AtLeastOneCorrectOptionDigited]="true"
+                  [required]="true"
+                  controlName="categoryInput"
+                  placeholder="Digit your category"
+                  (valueChange)="onCategoryInputChange($event)"
+                  [baseFormGroup]="creationQuizForm">
+          </app-auto-filter-dropdown>
+        </div>
+      <ng-container *ngIf="subCategories">
+        <div class="auto-filter-input">
+            <app-auto-filter-dropdown 
+                  [options]="subCategories"
+                  [AtLeastOneCorrectOptionDigited]="true"
+                  [required]="true"
+                  controlName="subCategoryInput"
+                  placeholder="Digit your sub-category"
+                  (valueChange)="onSubCategoryInputChange($event)"
+                  [baseFormGroup]="creationQuizForm">
+          </app-auto-filter-dropdown>
+        </div>
+      </ng-container>
+      <select [formControl]="difficultySelect" #difficulty id="difficultySelect">
+        <option [value]="null" disabled selected>Select difficulty</option>
+        <option [value]="diff.level" *ngFor="let diff of quizDifficulties">
+          {{ diff.level }}
+        </option>
+      </select>
+      <button class="primary" id="createBtn"  [disabled]="creationQuizForm.invalid" 
+          (click)="createQuiz()">Create Quiz</button>
+    </div>
 </ng-template>
