@@ -47,7 +47,7 @@
       <ng-container *ngIf="lastSelectedCategory.topicName">{{ lastSelectedCategory.topicName | uppercase}}:</ng-container> {{ lastSelectedCategory.name | uppercase}}</h3>
   </ng-container>
   <div class="row" *ngIf="questions">
-    <app-quiz [questions]="questions" ></app-quiz>
+    <app-quiz [questions]="questions" [selectedCategory]="lastSelectedCategory" [selectedDifficulty]="lastSelectedDifficulty" ></app-quiz>
   </div>
 </ng-template>
 

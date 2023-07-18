@@ -18,6 +18,8 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
   questions: Optional<Question[]>;
   selectedCategory : Optional<CategoryDetails>;
   lastSelectedCategory : Optional<CategoryDetails>;
+  lastSelectedDifficulty: Optional<DifficultyType>;
+
   creationQuizForm!: FormGroup;
   quizDifficulties = QUIZ_DIFFICULTIES;
 
@@ -84,6 +86,7 @@ export class QuizMakerComponent implements OnInit, OnDestroy {
     }
     const categoryId = this.selectedCategory?.id?.toString()!;
     this.lastSelectedCategory = this.selectedCategory;
+    this.lastSelectedDifficulty = this.difficultySelect.value;
     this.resetForm();
     this.isLoadingQuestion = true;
     this.subCategoryChosen = null;

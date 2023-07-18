@@ -1,12 +1,13 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
-import {Question} from '../data.models';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {CategoryDetails, Question} from '../data.models';
 
 @Component({
   selector: 'app-question',
   templateUrl: './question.component.html',
   styleUrls: ['./question.component.css']
 })
-export class QuestionComponent {
+export class QuestionComponent implements OnChanges {
+
 
   @Input({required: true})
   question!: Question;
@@ -14,6 +15,29 @@ export class QuestionComponent {
   correctAnswer?: string;
   @Input()
   userAnswer?: string;
+  @Input()
+  questionIndex?: number;
+  @Input()
+  disableChangeQuestionsButton?: boolean;
+  @Input()
+  newChangedQuestion?: {question: Question, position: number};
+
+  @Output()
+  change = new EventEmitter<string>();
+
+  
+  @Output()
+  changeQuestion = new EventEmitter<number>();
+
+  currentSelection!: string;
+
+  loadingChangeQuestion = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes['newChangedQuestion']?.currentValue){
+        this.changeQuestionToDisplay(changes['newChangedQuestion']?.currentValue)
+    }
+  }
 
   getButtonClass(answer: string): string {
     if (! this.userAnswer) {
@@ -28,13 +52,20 @@ export class QuestionComponent {
     return "primary";
   }
 
-  @Output()
-  change = new EventEmitter<string>();
-
-  currentSelection!: string;
-
   buttonClicked(answer: string): void {
     this.currentSelection = answer;
     this.change.emit(answer);
+  }
+
+  changeQuestionButtonClicked(): void {
+    this.changeQuestion.emit(this.questionIndex);
+    this.loadingChangeQuestion = true;
+  }
+
+  changeQuestionToDisplay(newQuestion: {question: Question, position: number}) {
+    if(this.questionIndex === newQuestion.position){
+      this.question = newQuestion.question;
+      this.loadingChangeQuestion = false
+    }
   }
 }

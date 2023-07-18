@@ -105,14 +105,14 @@ export class AutoFilterDropdownComponent {
       if (typeof this.options[0] === 'string') {
         // Array of strings
         const options = this.options as string[];
-        filtered = options.filter((category: string) =>
-          category.toLowerCase().includes(filterValue)
+        filtered = options.filter((option: string) =>
+        option.toLowerCase().includes(filterValue)
         );
       } else {
         const options = this.options as AutoFilterBackdrownObject[];
         // Array of objects with 'name' property
-        filtered = options.filter((category: AutoFilterBackdrownObject) =>
-          category.name.toLowerCase().includes(filterValue)
+        filtered = options.filter((option: AutoFilterBackdrownObject) =>
+          option.name.toLowerCase().includes(filterValue)
         );
       }
     } else {
