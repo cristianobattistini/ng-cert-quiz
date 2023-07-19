@@ -3,9 +3,9 @@
   <app-loading-ellipsis></app-loading-ellipsis>
 </ng-container>
 <ng-template  #quizContainer>
-  <app-toggle text="Enable dynamic quiz creation" (toggleChange)="onToggleChange($event)"></app-toggle>
+  <app-toggle class="toggle-container" text="Enable dynamic quiz creation" (toggleChange)="onToggleChange($event)"></app-toggle>
   <ng-container *ngIf="!enableDynamicQuizCreation, else dynamicQuizCreation">
-      <div class="row" [formGroup]="creationQuizForm">
+      <div class="row margin-top-10" [formGroup]="creationQuizForm">
         <div class="col-sm-11">
           <select [formControl]="categorySelect" #category id="categorySelect">
             <option [value]="null" disabled selected>Select category</option>
@@ -52,7 +52,7 @@
 </ng-template>
 
 <ng-template #dynamicQuizCreation>
-  <div class="container" [formGroup]="creationQuizForm">
+  <div class="container margin-top-10" [formGroup]="creationQuizForm">
       <div class="auto-filter-input">
           <app-auto-filter-dropdown 
                   [options]="categories"

@@ -16,6 +16,7 @@ button:disabled {
 
 .container{
     display: flex;
+    flex-wrap: wrap;
 }
 
 #createBtn{
@@ -23,14 +24,8 @@ button:disabled {
     margin: 4px;
 }
 
-#categorySelect{
-    height: 49px;
-}
-
-#subcategorySelect{
-    height: 49px;
-}
-
+#categorySelect,
+#subcategorySelect,
 #difficultySelect{
     height: 49px;
 }
