@@ -1,3 +1,4 @@
+<!-- if the formGroup is passed, then it will be used. Else not -->
 <ng-container *ngIf="formGroup, else withoutForm">
     <div [formGroup]="formGroup">
         <ng-container  [ngTemplateOutlet]="inputContainer"></ng-container>
@@ -26,4 +27,3 @@
         </ng-container>
     </ng-container>
 </ng-template>
-  <!-- [innerHTML]="highlightMatch(category)" -->
