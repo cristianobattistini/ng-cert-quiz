@@ -4,7 +4,7 @@ import {QuizService} from '../quiz.service';
 import {Router} from '@angular/router';
 import { switchMap, take } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { QUESTIONS_QUIZ_AMOUNT } from '../shared/constants/constants';
+import { QUESTION_FORM_CONTROL_INCIPIT, QUESTIONS_QUIZ_AMOUNT } from '../shared/constants/constants';
 
 @Component({
   selector: 'app-quiz',
@@ -31,6 +31,7 @@ export class QuizComponent implements OnInit{
   router = inject(Router);
 
   QUESTIONS_AMOUNT = QUESTIONS_QUIZ_AMOUNT;
+  FORM_CONTROL_INCIPIT= QUESTION_FORM_CONTROL_INCIPIT;
   quizForm!: FormGroup;
   isLoadingChangeQuestion: boolean = false;
 
@@ -43,7 +44,7 @@ export class QuizComponent implements OnInit{
   setUpQuizForm() {
     this.quizForm = this.fb.group({ })
     for (let i = 0; i < +this.QUESTIONS_AMOUNT; i++) {
-      const questionControlName = `question-${i}`;
+      const questionControlName = this.FORM_CONTROL_INCIPIT + i;
       this.quizForm.addControl(questionControlName, new FormControl<string>("", Validators.required));
     }
     this.quizForm.updateValueAndValidity();
@@ -62,7 +63,7 @@ export class QuizComponent implements OnInit{
           this.changedQuestion = { question: questions[0], position: $event };
           if(this.changedQuestion && this.questions){
             this.questions?.splice(this.changedQuestion.position, 1, this.changedQuestion.question);
-            const formControl = this.quizForm.get("question-"+ this.changedQuestion.position);
+            const formControl = this.quizForm.get(this.FORM_CONTROL_INCIPIT + this.changedQuestion.position);
             if(formControl){
               formControl.setValue("");
             }
@@ -78,7 +79,7 @@ export class QuizComponent implements OnInit{
   }
 
   onUserAnswer($event: {answer: string, position: number}){
-    const formControl = this.quizForm.get("question-"+$event.position);
+    const formControl = this.quizForm.get(this.FORM_CONTROL_INCIPIT + $event.position);
     if(formControl){
       formControl.setValue($event.answer);
     }
