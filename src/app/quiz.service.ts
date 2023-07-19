@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable, of } from 'rxjs';
 import { Category, DifficultyType, ApiQuestion, Question, Results, CategoryDetails } from './data.models';
 import { switchMap } from 'rxjs/operators';
-import { SUB_CATEGORY_SEPARATOR } from './shared/constants/constants';
+import { QUESTIONS_QUIZ_AMOUNT, SUB_CATEGORY_SEPARATOR } from './shared/constants/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -54,7 +54,7 @@ export class QuizService {
   }
 
 
-  createQuiz(categoryId: string, difficulty: DifficultyType, amount = 5): Observable<Question[]> {
+  createQuiz(categoryId: string, difficulty: DifficultyType, amount = QUESTIONS_QUIZ_AMOUNT): Observable<Question[]> {
     return this.http.get<{ results: ApiQuestion[] }>(
       `${this.API_URL}/api.php?amount=${amount}&category=${categoryId}&difficulty=${difficulty.toLowerCase()}&type=multiple`)
       .pipe(

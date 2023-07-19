@@ -10,7 +10,7 @@
             *ngFor="let answer of question.all_answers"
             [innerHTML]="answer">
     </button>
-    <button *ngIf="!disableChangeQuestionsButton"
+    <button *ngIf="!hideChangeQuestionsButton"
         (click)="changeQuestionButtonClicked()"
         class="change-question-btn">
         Change question

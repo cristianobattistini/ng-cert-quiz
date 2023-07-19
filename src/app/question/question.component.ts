@@ -16,14 +16,14 @@ export class QuestionComponent implements OnChanges {
   @Input()
   userAnswer?: string;
   @Input()
-  questionIndex?: number;
+  questionIndex!: number;
   @Input()
-  disableChangeQuestionsButton?: boolean;
+  hideChangeQuestionsButton?: boolean;
   @Input()
   newChangedQuestion?: {question: Question, position: number};
 
   @Output()
-  change = new EventEmitter<string>();
+  change = new EventEmitter<{answer: string, position: number}>();
 
   
   @Output()
@@ -54,7 +54,7 @@ export class QuestionComponent implements OnChanges {
 
   buttonClicked(answer: string): void {
     this.currentSelection = answer;
-    this.change.emit(answer);
+    this.change.emit({answer, position: this.questionIndex});
   }
 
   changeQuestionButtonClicked(): void {
