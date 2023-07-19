@@ -15,6 +15,10 @@ export class QuestionComponent implements OnChanges {
   correctAnswer?: string;
   @Input()
   userAnswer?: string;
+
+  /**
+   * every question has its own index inside the array of question
+   */
   @Input()
   questionIndex!: number;
   @Input()
@@ -22,9 +26,11 @@ export class QuestionComponent implements OnChanges {
   @Input()
   newChangedQuestion?: QuestionDetails;
 
+  /**
+   * the answer is wrapped with the position of the question inside the array
+   */
   @Output()
   change = new EventEmitter<AnswerChosen>();
-
   
   @Output()
   changeQuestion = new EventEmitter<number>();
@@ -34,6 +40,7 @@ export class QuestionComponent implements OnChanges {
   loadingChangeQuestion = false;
 
   ngOnChanges(changes: SimpleChanges): void {
+    // this is to change the value of a question changed with the new one
     if(changes['newChangedQuestion']?.currentValue){
         this.changeQuestionToDisplay(changes['newChangedQuestion']?.currentValue)
     }
