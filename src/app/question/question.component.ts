@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {CategoryDetails, Question} from '../data.models';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {AnswerChosen, Question, QuestionDetails} from '../data.models';
 
 @Component({
   selector: 'app-question',
@@ -20,10 +20,10 @@ export class QuestionComponent implements OnChanges {
   @Input()
   hideChangeQuestionsButton?: boolean;
   @Input()
-  newChangedQuestion?: {question: Question, position: number};
+  newChangedQuestion?: QuestionDetails;
 
   @Output()
-  change = new EventEmitter<{answer: string, position: number}>();
+  change = new EventEmitter<AnswerChosen>();
 
   
   @Output()
@@ -62,7 +62,7 @@ export class QuestionComponent implements OnChanges {
     this.loadingChangeQuestion = true;
   }
 
-  changeQuestionToDisplay(newQuestion: {question: Question, position: number}) {
+  changeQuestionToDisplay(newQuestion: QuestionDetails) {
     if(this.questionIndex === newQuestion.position){
       this.question = newQuestion.question;
       this.loadingChangeQuestion = false

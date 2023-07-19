@@ -42,3 +42,15 @@ export type DifficultyType = "Easy" | "Medium" | "Hard";
 export interface Difficulty {
   level: DifficultyType;
 }
+
+export interface Position{
+  position: number
+}
+
+export interface QuestionDetails extends Position{
+  question: Question
+}
+
+export interface AnswerChosen extends Position{
+  answer: string
+}

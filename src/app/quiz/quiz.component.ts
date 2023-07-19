@@ -1,8 +1,8 @@
 import {Component, inject, Input, OnInit} from '@angular/core';
-import {CategoryDetails, DifficultyType, Optional, Question} from '../data.models';
+import {AnswerChosen, CategoryDetails, DifficultyType, Optional, Question, QuestionDetails} from '../data.models';
 import {QuizService} from '../quiz.service';
 import {Router} from '@angular/router';
-import { switchMap, take } from 'rxjs';
+import { take } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { QUESTION_FORM_CONTROL_INCIPIT, QUESTIONS_QUIZ_AMOUNT } from '../shared/constants/constants';
 
@@ -23,7 +23,7 @@ export class QuizComponent implements OnInit{
   questions: Question[] | null = [];
 
   disableChangeQuestions : boolean = false;
-  changedQuestion ?: {question: Question, position: number};
+  changedQuestion ?: QuestionDetails;
 
   userAnswers: string[] = [];
 
@@ -78,7 +78,7 @@ export class QuizComponent implements OnInit{
     }
   }
 
-  onUserAnswer($event: {answer: string, position: number}){
+  onUserAnswer($event: AnswerChosen){
     const formControl = this.quizForm.get(this.FORM_CONTROL_INCIPIT + $event.position);
     if(formControl){
       formControl.setValue($event.answer);
